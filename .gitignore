@@ -56,3 +56,6 @@ Thumbs.db
 
 # Type checkers
 .mypy_cache/
+
+# Frontend
+Frontend/
