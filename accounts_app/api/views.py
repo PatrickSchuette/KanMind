@@ -85,3 +85,14 @@ class EmailCheckView(APIView):
             'email': profile.user.email,
             'fullname': profile.fullname,
         }
+
+
+class LogoutView(APIView):
+    """Handles user logout by deleting the current auth token."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Delete the requesting user's auth token."""
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)
