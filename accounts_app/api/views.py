@@ -71,6 +71,8 @@ class EmailCheckView(APIView):
     def get(self, request):
         """Return the user data for a given email, if it exists."""
         email = request.query_params.get('email')
+        if not email:
+            return Response({'detail': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             profile = UserProfile.objects.select_related(
                 'user').get(user__email=email)
