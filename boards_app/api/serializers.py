@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from tasks_app.api.serializers import TaskNestedSerializer
 from boards_app.models import Board
 
 
