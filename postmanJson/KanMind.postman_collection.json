@@ -1,0 +1,2684 @@
+{
+  "info": {
+    "_postman_id": "ef06fde2-3eb0-4acb-b3ac-e6f48fae7f21",
+    "name": "KanMind",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56702018"
+  },
+  "item": [
+    {
+      "name": "happy path",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "register_user",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Statuscode ist 201 bei erfolgreicher Regestrieung!\", () => {\r",
+                      "    RESPONSE.to.have.status(201);\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"Email als Username wurde korrekt gespeichert\", () => {\r",
+                      "    const email = pm.variables.get(\"EMAIL\")\r",
+                      "\r",
+                      "    if(email && pm.response.code === 201){\r",
+                      "        pm.environment.set(\"email\", email)\r",
+                      "        pm.expect(true).to.be.true;\r",
+                      "        console.log(email)\r",
+                      "    }else{\r",
+                      "            pm.expect.fail()\r",
+                      "        }\r",
+                      "})\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
+                      "const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}@test.de`;\r",
+                      "\r",
+                      "console.log(NAME);\r",
+                      "console.log(EMAIL);\r",
+                      "\r",
+                      "pm.variables.set(\"NAME\", NAME);\r",
+                      "pm.variables.set(\"EMAIL\", EMAIL);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"fullname\": \"{{NAME}}\",\r\n    \"email\": \"{{EMAIL}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"repeated_password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}registration/",
+                  "host": [
+                    "{{base_url}}registration"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "login_user",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Statuscode ist 200 bei erfolgreichem Login!\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"Token ist übergeben worden bei erfolgreichem Login!\", () => {\r",
+                      "    try{\r",
+                      "        const RESPONSEJSON = RESPONSE.json();\r",
+                      "        pm.expect(RESPONSEJSON).to.have.property(\"token\");\r",
+                      "    } catch (error) {\r",
+                      "        pm.expect.fail(\"Es ist kein token übertragen wurden: \" + error)\r",
+                      "    }\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"token wurde korrekt gespeichert\", () => {\r",
+                      "    if(pm.response.code === 200){\r",
+                      "        const RESPONSEJSON = RESPONSE.json();\r",
+                      "        pm.environment.set(\"token\", RESPONSEJSON.token)\r",
+                      "        pm.expect(true).to.be.true;\r",
+                      "    }else{\r",
+                      "            pm.expect.fail()\r",
+                      "        }\r",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}login/",
+                  "host": [
+                    "{{base_url}}login"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "email-Check",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200 beim erfolgreichen Finden der Email\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort enthält alle erwarteten Felder\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY).to.have.property(\"id\");\r",
+                      "    pm.expect(BODY).to.have.property(\"email\");\r",
+                      "    pm.expect(BODY).to.have.property(\"fullname\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Zurückgegebene Email stimmt mit der gesuchten überein\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    const SEARCHED_EMAIL = pm.environment.get(\"email\");\r",
+                      "    pm.expect(BODY.email).to.eql(SEARCHED_EMAIL);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}email-check/?email={{email}}",
+                  "host": [
+                    "{{base_url}}email-check"
+                  ],
+                  "path": [
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "email",
+                      "value": "{{email}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Boards",
+          "item": [
+            {
+              "name": "Boards",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Statuscode ist 201 bei erfolgreichem anlegen!\", () => {\r",
+                      "    if(pm.response.code === 201){\r",
+                      "        const RESPONSEJSON = RESPONSE.json();\r",
+                      "        pm.environment.set(\"boardID\", RESPONSEJSON.id)\r",
+                      "        pm.expect(true).to.be.true;\r",
+                      "    }else{\r",
+                      "            pm.expect.fail()\r",
+                      "        }\r",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Mein erstes Board\",\r\n    \"members\": []\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Authentifizierung ist erfolgreich!\", () => {\r",
+                      "    RESPONSE.to.not.have.status(401);\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"Statuscode ist 200 beim erfolgreichem auslesen!\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"Antwort ist ein Array\", () => {\r",
+                      "    pm.expect(RESPONSE.json()).to.be.an(\"array\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200 beim erfolgreichen Auslesen\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort enthält alle erwarteten Felder\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY).to.have.property(\"id\");\r",
+                      "    pm.expect(BODY).to.have.property(\"title\");\r",
+                      "    pm.expect(BODY).to.have.property(\"owner_id\");\r",
+                      "    pm.expect(BODY).to.have.property(\"members\");\r",
+                      "    pm.expect(BODY).to.have.property(\"tasks\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"members und tasks sind Arrays\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY.members).to.be.an(\"array\");\r",
+                      "    pm.expect(BODY.tasks).to.be.an(\"array\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/{{boardID}}/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    "{{boardID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200 beim erfolgreichen Aktualisieren\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort enthält alle erwarteten Felder\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY).to.have.property(\"id\");\r",
+                      "    pm.expect(BODY).to.have.property(\"title\");\r",
+                      "    pm.expect(BODY).to.have.property(\"owner_data\");\r",
+                      "    pm.expect(BODY).to.have.property(\"members_data\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Titel wurde korrekt übernommen\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY.title).to.eql(pm.request.body ? JSON.parse(pm.request.body.raw).title : undefined);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Geänderter Titel\",\r\n    \"members\": []\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/{{boardID}}/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    "{{boardID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
+                      "    RESPONSE.to.have.status(204);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
+                      "    pm.expect(RESPONSE.text()).to.be.empty;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/{{boardID}}/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    "{{boardID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Task",
+          "item": [
+            {
+              "name": "Task erstellen",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Statuscode ist 201 beim erfolgreichen Anlegen\", () => {\r",
+                      "    if (pm.response.code === 201) {\r",
+                      "        const BODY = RESPONSE.json();\r",
+                      "        pm.environment.set(\"taskID\", BODY.id);\r",
+                      "        pm.expect(true).to.be.true;\r",
+                      "    } else {\r",
+                      "        pm.expect.fail();\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort enthält alle erwarteten Felder\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY).to.have.property(\"id\");\r",
+                      "    pm.expect(BODY).to.have.property(\"board\");\r",
+                      "    pm.expect(BODY).to.have.property(\"title\");\r",
+                      "    pm.expect(BODY).to.have.property(\"status\");\r",
+                      "    pm.expect(BODY).to.have.property(\"priority\");\r",
+                      "    pm.expect(BODY).to.have.property(\"comments_count\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      "\r",
+                      "\r",
+                      "function ensureMyUserId(callback) {\r",
+                      "    if (pm.environment.get(\"myUserId\")) {\r",
+                      "        callback();\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
+                      "        method: \"GET\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
+                      "        callback();\r",
+                      "    });\r",
+                      "}\r",
+                      "\r",
+                      "ensureMyUserId(() => {  \r",
+                      "    const REQUEST_BODY = JSON.parse(pm.request.body.raw);\r",
+                      "\r",
+                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": {{boardID}},\r\n    \"title\": \"Testaufgabe\",\r\n    \"description\": \"Beschreibung der Testaufgabe\",\r\n    \"status\": \"to-do\",\r\n    \"priority\": \"medium\",\r\n    \"assignee_id\": {{myUserId}},\r\n    \"reviewer_id\": {{myUserId}},\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task mir zuweisen",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200 beim erfolgreichen Auslesen\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort ist ein Array\", () => {\r",
+                      "    pm.expect(RESPONSE.json()).to.be.an(\"array\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Die erstellte Task ist als assignee enthalten\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    const IDS = BODY.map(task => task.id);\r",
+                      "    pm.expect(IDS).to.include(Number(pm.environment.get(\"taskID\")));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/assigned-to-me/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "assigned-to-me",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Taskreviewing",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200 beim erfolgreichen Auslesen\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort ist ein Array\", () => {\r",
+                      "    pm.expect(RESPONSE.json()).to.be.an(\"array\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Die erstellte Task ist als reviewer enthalten\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    const IDS = BODY.map(task => task.id);\r",
+                      "    pm.expect(IDS).to.include(Number(pm.environment.get(\"taskID\")));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/reviewing/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "reviewing",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task update",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200 beim erfolgreichen Aktualisieren\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Titel wurde korrekt übernommen\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    const SENT_TITLE = JSON.parse(pm.request.body.raw).title;\r",
+                      "    pm.expect(BODY.title).to.eql(SENT_TITLE);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"board darf sich nicht geändert haben\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY.board).to.eql(Number(pm.environment.get(\"boardID\")));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Geänderte Testaufgabe\",\r\n    \"status\": \"in-progress\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/{{taskID}}/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "{{taskID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Comment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Statuscode ist 201 beim erfolgreichen Anlegen\", () => {\r",
+                      "    if (pm.response.code === 201) {\r",
+                      "        const BODY = RESPONSE.json();\r",
+                      "        pm.environment.set(\"commentID\", BODY.id);\r",
+                      "        pm.expect(true).to.be.true;\r",
+                      "    } else {\r",
+                      "        pm.expect.fail();\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort enthält alle erwarteten Felder\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY).to.have.property(\"id\");\r",
+                      "    pm.expect(BODY).to.have.property(\"created_at\");\r",
+                      "    pm.expect(BODY).to.have.property(\"author\");\r",
+                      "    pm.expect(BODY).to.have.property(\"content\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"content\": \"Das ist ein Testkommentar.\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/{{taskID}}/comments/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "{{taskID}}",
+                    "comments",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Comment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200 beim erfolgreichen Auslesen\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort ist ein Array\", () => {\r",
+                      "    pm.expect(RESPONSE.json()).to.be.an(\"array\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Der erstellte Kommentar ist enthalten\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    const IDS = BODY.map(comment => comment.id);\r",
+                      "    pm.expect(IDS).to.include(Number(pm.environment.get(\"commentID\")));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/{{taskID}}/comments/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "{{taskID}}",
+                    "comments",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Comment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
+                      "    RESPONSE.to.have.status(204);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
+                      "    pm.expect(RESPONSE.text()).to.be.empty;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/{{taskID}}/comments/{{commentID}}/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "{{taskID}}",
+                    "comments",
+                    "{{commentID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
+                      "    RESPONSE.to.have.status(204);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
+                      "    pm.expect(RESPONSE.text()).to.be.empty;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/{{taskID}}/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "{{taskID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "logout_user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const RESPONSE = pm.response;\r",
+                  "\r",
+                  "pm.test(\"Status ist 200 beim erfolgreichen Logout\", () => {\r",
+                  "    RESPONSE.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Token wurde ungültig gemacht\", () => {\r",
+                  "    if (pm.response.code === 200) {\r",
+                  "        pm.environment.unset(\"token\");\r",
+                  "        pm.expect(true).to.be.true;\r",
+                  "    } else {\r",
+                  "        pm.expect.fail();\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "token {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}logout/",
+              "host": [
+                "{{base_url}}logout"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "unhappy path",
+      "item": [
+        {
+          "name": "Auth Copy",
+          "item": [
+            {
+              "name": "register_user - Password missmatch",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Passwort stimmt nicht überein!\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "})\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
+                      "const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}@test.de`;\r",
+                      "\r",
+                      "console.log(NAME);\r",
+                      "console.log(EMAIL);\r",
+                      "\r",
+                      "pm.variables.set(\"NAME\", NAME);\r",
+                      "pm.variables.set(\"EMAIL\", EMAIL);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"fullname\": \"{{NAME}}\",\r\n    \"email\": \"{{EMAIL}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"repeated_password\": \"{{password}}!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}registration/",
+                  "host": [
+                    "{{base_url}}registration"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "register_user - Email bereits vergeben",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei bereits vergebener Email\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
+                      "const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}@test.de`;\r",
+                      "\r",
+                      "console.log(NAME);\r",
+                      "console.log(EMAIL);\r",
+                      "\r",
+                      "pm.variables.set(\"NAME\", NAME);\r",
+                      "pm.variables.set(\"EMAIL\", EMAIL);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"fullname\": \"Doppelte Person\",\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"repeated_password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}registration/",
+                  "host": [
+                    "{{base_url}}registration"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "register_user - Pflichtfeld fehlt",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei fehlendem Pflichtfeld\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
+                      "const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}@test.de`;\r",
+                      "\r",
+                      "console.log(NAME);\r",
+                      "console.log(EMAIL);\r",
+                      "\r",
+                      "pm.variables.set(\"NAME\", NAME);\r",
+                      "pm.variables.set(\"EMAIL\", EMAIL);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"repeated_password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}registration/",
+                  "host": [
+                    "{{base_url}}registration"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "logout_user - Falscher Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Invalid token\", () => {\r",
+                      "    RESPONSE.to.have.status(401);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}!",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}logout/",
+                  "host": [
+                    "{{base_url}}logout"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "login_user - Falsches Passwort",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei falschem Passwort\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Fehlermeldung ist enthalten\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY).to.have.property(\"non_field_errors\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}login/",
+                  "host": [
+                    "{{base_url}}login"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "login_user - Falsche Email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei unbekannter Email\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Fehlermeldung ist enthalten\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY).to.have.property(\"non_field_errors\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"falsche@mail.de\",\r\n    \"password\": \"{{password}}!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}login/",
+                  "host": [
+                    "{{base_url}}login"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "email-check - Ohne Query-Parameter",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei fehlendem Email-Parameter\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}email-check/",
+                  "host": [
+                    "{{base_url}}email-check"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "email-check - Unbekannte Email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 404 bei unbekannter Email\", () => {\r",
+                      "    RESPONSE.to.have.status(404);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}email-check/?email=nichtvorhanden@test.de",
+                  "host": [
+                    "{{base_url}}email-check"
+                  ],
+                  "path": [
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "email",
+                      "value": "nichtvorhanden@test.de"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "email-check - Ohne Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 401 ohne Authentifizierung\", () => {\r",
+                      "    RESPONSE.to.have.status(401);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{token}}",
+                    "type": "text",
+                    "disabled": true
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}email-check/?email={{email}}",
+                  "host": [
+                    "{{base_url}}email-check"
+                  ],
+                  "path": [
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "email",
+                      "value": "{{email}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Boards",
+          "item": [
+            {
+              "name": "Boards - Titel fehlt beim Erstellen",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei fehlendem Titel\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"members\": []\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards - Ohne Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 401 ohne Authentifizierung\", () => {\r",
+                      "    RESPONSE.to.have.status(401);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text",
+                    "disabled": true
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards ID - Nicht existierende ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 404 bei nicht existierender ID\", () => {\r",
+                      "    RESPONSE.to.have.status(404);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/9999999999/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    "9999999999",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards ID - Fremdes Board (kein Zugriff)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 403 bei fremdem Board\", () => {\r",
+                      "    RESPONSE.to.have.status(403);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "if (!pm.environment.get(\"foreignToken\")) {\r",
+                      "    const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
+                      "    const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}.foreign@test.de`;\r",
+                      "\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"registration/\",\r",
+                      "        method: \"POST\",\r",
+                      "        header: {\r",
+                      "            \"Content-Type\": \"application/json\"\r",
+                      "        },\r",
+                      "        body: {\r",
+                      "            mode: \"raw\",\r",
+                      "            raw: JSON.stringify({\r",
+                      "                fullname: NAME,\r",
+                      "                email: EMAIL,\r",
+                      "                password: pm.environment.get(\"password\"),\r",
+                      "                repeated_password: pm.environment.get(\"password\")\r",
+                      "            })\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Anlegen des Fremdusers:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"foreignToken\", BODY.token);\r",
+                      "        console.log(\"Fremduser angelegt, Token gespeichert.\");\r",
+                      "    });\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{foreignToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/{{boardID}}/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    "{{boardID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Task",
+          "item": [
+            {
+              "name": "Task - Ungültiger Status",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei ungültigem Status-Wert\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      "\r",
+                      "\r",
+                      "function ensureMyUserId(callback) {\r",
+                      "    if (pm.environment.get(\"myUserId\")) {\r",
+                      "        callback();\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
+                      "        method: \"GET\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
+                      "        callback();\r",
+                      "    });\r",
+                      "}\r",
+                      "\r",
+                      "ensureMyUserId(() => {  \r",
+                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
+                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
+                      "\r",
+                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
+                      "});\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": {{boardID}},\r\n    \"title\": \"Testaufgabe\",\r\n    \"description\": \"Beschreibung der Testaufgabe\",\r\n    \"status\": \"not-a-valid-status\",\r\n    \"priority\": \"medium\",\r\n    \"assignee_id\": {{myUserId}},\r\n    \"reviewer_id\": {{myUserId}},\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task -   Board fehlt",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei fehlendem Board\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      "\r",
+                      "\r",
+                      "function ensureMyUserId(callback) {\r",
+                      "    if (pm.environment.get(\"myUserId\")) {\r",
+                      "        callback();\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
+                      "        method: \"GET\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
+                      "        callback();\r",
+                      "    });\r",
+                      "}\r",
+                      "\r",
+                      "ensureMyUserId(() => {  \r",
+                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
+                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
+                      "\r",
+                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
+                      "});\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Ohne Board\",\r\n    \"description\": \"Test\",\r\n    \"status\": \"to-do\",\r\n    \"priority\": \"medium\",\r\n    \"assignee_id\": 999999,\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task -  Nicht existierendes Board",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 403 oder 400 bei nicht existierendem Board\", () => {\r",
+                      "    pm.expect([400, 403]).to.include(RESPONSE.code);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      "\r",
+                      "\r",
+                      "function ensureMyUserId(callback) {\r",
+                      "    if (pm.environment.get(\"myUserId\")) {\r",
+                      "        callback();\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
+                      "        method: \"GET\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
+                      "        callback();\r",
+                      "    });\r",
+                      "}\r",
+                      "\r",
+                      "ensureMyUserId(() => {  \r",
+                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
+                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
+                      "\r",
+                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
+                      "});\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": 999999,\r\n    \"title\": \"Fantasie-Board\",\r\n    \"description\": \"Beschreibung der Testaufgabe\",\r\n    \"status\": \"not-a-valid-status\",\r\n    \"priority\": \"medium\",\r\n    \"assignee_id\": {{myUserId}},\r\n    \"reviewer_id\": {{myUserId}},\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task -  Fremduser als Assignee (kein Board-Mitglied)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei nicht existierendem oder fremdem Assignee\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      "\r",
+                      "\r",
+                      "function ensureMyUserId(callback) {\r",
+                      "    if (pm.environment.get(\"myUserId\")) {\r",
+                      "        callback();\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
+                      "        method: \"GET\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
+                      "        callback();\r",
+                      "    });\r",
+                      "}\r",
+                      "\r",
+                      "ensureMyUserId(() => {  \r",
+                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
+                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
+                      "\r",
+                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
+                      "});\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": {{boardID}},\r\n    \"title\": \"Ungültiger Assignee\",\r\n    \"description\": \"Test\",\r\n    \"status\": \"to-do\",\r\n    \"priority\": \"medium\",\r\n    \"assignee_id\": 999999,\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task - Nicht-Mitglied versucht Task anzulegen",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 403 wenn Fremduser Task anlegen will\", () => {\r",
+                      "    RESPONSE.to.have.status(403);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      "\r",
+                      "\r",
+                      "if (!pm.environment.get(\"foreignToken\")) {\r",
+                      "    const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
+                      "    const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}.foreign@test.de`;\r",
+                      "\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"registration/\",\r",
+                      "        method: \"POST\",\r",
+                      "        header: {\r",
+                      "            \"Content-Type\": \"application/json\"\r",
+                      "        },\r",
+                      "        body: {\r",
+                      "            mode: \"raw\",\r",
+                      "            raw: JSON.stringify({\r",
+                      "                fullname: NAME,\r",
+                      "                email: EMAIL,\r",
+                      "                password: pm.environment.get(\"password\"),\r",
+                      "                repeated_password: pm.environment.get(\"password\")\r",
+                      "            })\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Anlegen des Fremdusers:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"foreignToken\", BODY.token);\r",
+                      "        console.log(\"Fremduser angelegt, Token gespeichert.\");\r",
+                      "    });\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{foreignToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": {{boardID}},\r\n    \"title\": \"Ungültiger Assignee\",\r\n    \"description\": \"Test\",\r\n    \"status\": \"to-do\",\r\n    \"priority\": \"medium\",\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task - Board-Änderung wird ignoriert",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 200, board bleibt unverändert\", () => {\r",
+                      "    RESPONSE.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"board wurde NICHT geändert\", () => {\r",
+                      "    const BODY = RESPONSE.json();\r",
+                      "    pm.expect(BODY.board).to.eql(Number(pm.environment.get(\"boardID\")));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": 999999,\r\n    \"title\": \"Board-Änderungsversuch\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/{{taskID}}/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "{{taskID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task - Nicht existierende Task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 404 bei nicht existierender Task\", () => {\r",
+                      "    RESPONSE.to.have.status(404);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": 999999,\r\n    \"title\": \"Board-Änderungsversuch\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/999999/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "999999",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Task -  Fremduser (kein Board-Mitglied) Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei nicht existierendem oder fremdem Assignee\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const heute = new Date();\r",
+                      "\r",
+                      "heute.setDate(heute.getDate() + 30);\r",
+                      "\r",
+                      "const jahr = heute.getFullYear();\r",
+                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
+                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
+                      "\r",
+                      "\r",
+                      "function ensureMyUserId(callback) {\r",
+                      "    if (pm.environment.get(\"myUserId\")) {\r",
+                      "        callback();\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
+                      "        method: \"GET\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
+                      "        }\r",
+                      "    }, (err, res) => {\r",
+                      "        if (err) {\r",
+                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        const BODY = res.json();\r",
+                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
+                      "        callback();\r",
+                      "    });\r",
+                      "}\r",
+                      "\r",
+                      "ensureMyUserId(() => {  \r",
+                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
+                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
+                      "\r",
+                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
+                      "});\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": {{boardID}},\r\n    \"title\": \"Ungültiger Assignee\",\r\n    \"description\": \"Test\",\r\n    \"status\": \"to-do\",\r\n    \"priority\": \"medium\",\r\n    \"assignee_id\": 999999,\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
