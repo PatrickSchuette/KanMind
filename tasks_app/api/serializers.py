@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 
-from tasks_app.models import Comment, Task
+from tasks_app.models import Comment, Task, Board
 from datetime import date
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -50,6 +51,7 @@ class TaskSerializer(serializers.ModelSerializer):
 class TaskCreateSerializer(serializers.ModelSerializer):
     """Validates data for creating a new task."""
 
+    board = serializers.IntegerField()
     assignee_id = serializers.PrimaryKeyRelatedField(
         source='assignee', queryset=User.objects.all(), required=False, allow_null=True
     )
@@ -59,11 +61,19 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'board', 'title', 'description', 'status', 'priority','assignee_id', 'reviewer_id', 'due_date']
+        fields = ['id', 'board', 'title', 'description', 'status','priority', 'assignee_id', 'reviewer_id', 'due_date']
+
+    def validate_board(self, value):
+        """Ensure the board exists and return the Board instance."""
+
+        try:
+            return Board.objects.get(id=value)
+        except Board.DoesNotExist:
+            raise NotFound('Board not found.')
 
     def validate(self, attrs):
         """Ensure assignee and reviewer are members of the board."""
-        
+
         board = attrs.get('board')
         for role in ['assignee', 'reviewer']:
             user = attrs.get(role)
@@ -73,18 +83,18 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
     def _is_board_member(self, board, user):
         """Check whether the given user is a member or owner of the board."""
-        
+
         return user == board.owner or board.members.filter(id=user.id).exists()
 
     def create(self, validated_data):
         """Create the task with the requesting user as owner."""
-        
+
         owner = self.context['request'].user
         return Task.objects.create(owner=owner, **validated_data)
-    
+
     def validate_due_date(self, value):
         """Ensure the due date is not in the past."""
-        
+
         if value and value < date.today():
             raise serializers.ValidationError('Due date cannot be in the past.')
         return value
