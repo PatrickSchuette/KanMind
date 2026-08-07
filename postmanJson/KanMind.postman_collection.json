@@ -448,60 +448,6 @@
                 }
               },
               "response": []
-            },
-            {
-              "name": "Boards ID",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "const RESPONSE = pm.response;\r",
-                      "\r",
-                      "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
-                      "    RESPONSE.to.have.status(204);\r",
-                      "});\r",
-                      "\r",
-                      "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
-                      "    pm.expect(RESPONSE.text()).to.be.empty;\r",
-                      "});"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "token {{token}}",
-                    "type": "text"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "{{base_url}}boards/{{boardID}}/",
-                  "host": [
-                    "{{base_url}}boards"
-                  ],
-                  "path": [
-                    "{{boardID}}",
-                    ""
-                  ]
-                }
-              },
-              "response": []
             }
           ]
         },
@@ -546,45 +492,10 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
-                      "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      "\r",
-                      "\r",
-                      "function ensureMyUserId(callback) {\r",
-                      "    if (pm.environment.get(\"myUserId\")) {\r",
-                      "        callback();\r",
-                      "        return;\r",
-                      "    }\r",
-                      "    pm.sendRequest({\r",
-                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
-                      "        method: \"GET\",\r",
-                      "        header: {\r",
-                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
-                      "        }\r",
-                      "    }, (err, res) => {\r",
-                      "        if (err) {\r",
-                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
-                      "            return;\r",
-                      "        }\r",
-                      "        const BODY = res.json();\r",
-                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
-                      "        callback();\r",
-                      "    });\r",
-                      "}\r",
-                      "\r",
-                      "ensureMyUserId(() => {  \r",
-                      "    const REQUEST_BODY = JSON.parse(pm.request.body.raw);\r",
-                      "\r",
-                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
-                      "});"
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));",
+                      "",
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));",
+                      "ensureMyUserId(() => {});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -878,17 +789,9 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      ""
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(35));"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -960,17 +863,9 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      ""
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -1012,218 +907,97 @@
                 }
               },
               "response": []
-            },
-            {
-              "name": "Comment",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "const RESPONSE = pm.response;\r",
-                      "\r",
-                      "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
-                      "    RESPONSE.to.have.status(204);\r",
-                      "});\r",
-                      "\r",
-                      "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
-                      "    pm.expect(RESPONSE.text()).to.be.empty;\r",
-                      "});"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      "const heute = new Date();\r",
-                      "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "token {{token}}",
-                    "type": "text"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "{{base_url}}tasks/{{taskID}}/comments/{{commentID}}/",
-                  "host": [
-                    "{{base_url}}tasks"
-                  ],
-                  "path": [
-                    "{{taskID}}",
-                    "comments",
-                    "{{commentID}}",
-                    ""
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Task",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "const RESPONSE = pm.response;\r",
-                      "\r",
-                      "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
-                      "    RESPONSE.to.have.status(204);\r",
-                      "});\r",
-                      "\r",
-                      "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
-                      "    pm.expect(RESPONSE.text()).to.be.empty;\r",
-                      "});"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      "const heute = new Date();\r",
-                      "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "token {{token}}",
-                    "type": "text"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "{{base_url}}tasks/{{taskID}}/",
-                  "host": [
-                    "{{base_url}}tasks"
-                  ],
-                  "path": [
-                    "{{taskID}}",
-                    ""
-                  ]
-                }
-              },
-              "response": []
             }
-          ]
-        },
-        {
-          "name": "logout_user",
+          ],
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {},
+                "exec": [
+                  "function setFutureDate(days) {\r",
+                  "    const heute = new Date();\r",
+                  "\r",
+                  "    heute.setDate(heute.getDate() + days);\r",
+                  "\r",
+                  "    const jahr = heute.getFullYear();\r",
+                  "    const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
+                  "    const tag = String(heute.getDate()).padStart(2, '0');\r",
+                  "    const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
+                  "\r",
+                  "    return formatiertesDatum;\r",
+                  "}\r",
+                  "\r",
+                  "function ensureMyUserId(callback) {\r",
+                  "    if (pm.environment.get(\"myUserId\")) {\r",
+                  "        callback();\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.sendRequest({\r",
+                  "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
+                  "        method: \"GET\",\r",
+                  "        header: {\r",
+                  "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
+                  "        }\r",
+                  "    }, (err, res) => {\r",
+                  "        if (err) {\r",
+                  "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const BODY = res.json();\r",
+                  "        pm.environment.set(\"myUserId\", BODY.id);\r",
+                  "        callback();\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "function setForeignToken() {\r",
+                  "    if (!pm.environment.get(\"foreignToken\")) {\r",
+                  "        const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
+                  "        const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}.foreign@test.de`;\r",
+                  "\r",
+                  "        pm.sendRequest({\r",
+                  "            url: pm.environment.get(\"base_url\") + \"registration/\",\r",
+                  "            method: \"POST\",\r",
+                  "            header: {\r",
+                  "                \"Content-Type\": \"application/json\"\r",
+                  "            },\r",
+                  "            body: {\r",
+                  "                mode: \"raw\",\r",
+                  "                raw: JSON.stringify({\r",
+                  "                    fullname: NAME,\r",
+                  "                    email: EMAIL,\r",
+                  "                    password: pm.environment.get(\"password\"),\r",
+                  "                    repeated_password: pm.environment.get(\"password\")\r",
+                  "                })\r",
+                  "            }\r",
+                  "        }, (err, res) => {\r",
+                  "            if (err) {\r",
+                  "                console.error(\"Fehler beim Anlegen des Fremdusers:\", err);\r",
+                  "                return;\r",
+                  "            }\r",
+                  "            const BODY = res.json();\r",
+                  "            pm.environment.set(\"foreignToken\", BODY.token);\r",
+                  "            console.log(\"Fremduser angelegt, Token gespeichert.\");\r",
+                  "        });\r",
+                  "    }\r",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  "const RESPONSE = pm.response;\r",
-                  "\r",
-                  "pm.test(\"Status ist 200 beim erfolgreichen Logout\", () => {\r",
-                  "    RESPONSE.to.have.status(200);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Token wurde ungültig gemacht\", () => {\r",
-                  "    if (pm.response.code === 200) {\r",
-                  "        pm.environment.unset(\"token\");\r",
-                  "        pm.expect(true).to.be.true;\r",
-                  "    } else {\r",
-                  "        pm.expect.fail();\r",
-                  "    }\r",
-                  "});"
-                ],
                 "type": "text/javascript",
                 "packages": {},
-                "requests": {}
+                "requests": {},
+                "exec": [
+                  ""
+                ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "token {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}logout/",
-              "host": [
-                "{{base_url}}logout"
-              ],
-              "path": [
-                ""
-              ]
-            }
-          },
-          "response": []
+          ]
         }
       ]
     },
@@ -1840,12 +1614,12 @@
                   "raw": ""
                 },
                 "url": {
-                  "raw": "{{base_url}}boards/9999999999/",
+                  "raw": "{{base_url}}boards/999999/",
                   "host": [
                     "{{base_url}}boards"
                   ],
                   "path": [
-                    "9999999999",
+                    "999999",
                     ""
                   ]
                 }
@@ -1874,35 +1648,9 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "if (!pm.environment.get(\"foreignToken\")) {\r",
-                      "    const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
-                      "    const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}.foreign@test.de`;\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "    pm.sendRequest({\r",
-                      "        url: pm.environment.get(\"base_url\") + \"registration/\",\r",
-                      "        method: \"POST\",\r",
-                      "        header: {\r",
-                      "            \"Content-Type\": \"application/json\"\r",
-                      "        },\r",
-                      "        body: {\r",
-                      "            mode: \"raw\",\r",
-                      "            raw: JSON.stringify({\r",
-                      "                fullname: NAME,\r",
-                      "                email: EMAIL,\r",
-                      "                password: pm.environment.get(\"password\"),\r",
-                      "                repeated_password: pm.environment.get(\"password\")\r",
-                      "            })\r",
-                      "        }\r",
-                      "    }, (err, res) => {\r",
-                      "        if (err) {\r",
-                      "            console.error(\"Fehler beim Anlegen des Fremdusers:\", err);\r",
-                      "            return;\r",
-                      "        }\r",
-                      "        const BODY = res.json();\r",
-                      "        pm.environment.set(\"foreignToken\", BODY.token);\r",
-                      "        console.log(\"Fremduser angelegt, Token gespeichert.\");\r",
-                      "    });\r",
-                      "}"
+                      "setForeignToken(() => {});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -1915,6 +1663,64 @@
               },
               "request": {
                 "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{foreignToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}boards/{{boardID}}/",
+                  "host": [
+                    "{{base_url}}boards"
+                  ],
+                  "path": [
+                    "{{boardID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boards ID - Löschen durch Fremduser",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 403 beim Löschversuch durch Nicht-Owner\", () => {\r",
+                      "    RESPONSE.to.have.status(403);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
+                      "\r",
+                      "setForeignToken(() => {});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
                 "header": [
                   {
                     "key": "Authorization",
@@ -1966,48 +1772,10 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      "\r",
-                      "\r",
-                      "function ensureMyUserId(callback) {\r",
-                      "    if (pm.environment.get(\"myUserId\")) {\r",
-                      "        callback();\r",
-                      "        return;\r",
-                      "    }\r",
-                      "    pm.sendRequest({\r",
-                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
-                      "        method: \"GET\",\r",
-                      "        header: {\r",
-                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
-                      "        }\r",
-                      "    }, (err, res) => {\r",
-                      "        if (err) {\r",
-                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
-                      "            return;\r",
-                      "        }\r",
-                      "        const BODY = res.json();\r",
-                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
-                      "        callback();\r",
-                      "    });\r",
-                      "}\r",
-                      "\r",
-                      "ensureMyUserId(() => {  \r",
-                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
-                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
-                      "\r",
-                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
-                      "});\r",
-                      "\r",
-                      ""
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));\r",
+                      "ensureMyUserId(() => {});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -2046,6 +1814,69 @@
               "response": []
             },
             {
+              "name": "Task - Ungültige Priorität",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 400 bei ungültigem Priority-Wert\", () => {\r",
+                      "    RESPONSE.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));\r",
+                      "ensureMyUserId(() => {});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"board\": {{boardID}},\r\n    \"title\": \"Ungültige Priorität\",\r\n    \"description\": \"Test\",\r\n    \"status\": \"to-do\",\r\n    \"priority\": \"not-a-valid-priority\",\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
               "name": "Task -   Board fehlt",
               "event": [
                 {
@@ -2067,48 +1898,10 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      "\r",
-                      "\r",
-                      "function ensureMyUserId(callback) {\r",
-                      "    if (pm.environment.get(\"myUserId\")) {\r",
-                      "        callback();\r",
-                      "        return;\r",
-                      "    }\r",
-                      "    pm.sendRequest({\r",
-                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
-                      "        method: \"GET\",\r",
-                      "        header: {\r",
-                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
-                      "        }\r",
-                      "    }, (err, res) => {\r",
-                      "        if (err) {\r",
-                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
-                      "            return;\r",
-                      "        }\r",
-                      "        const BODY = res.json();\r",
-                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
-                      "        callback();\r",
-                      "    });\r",
-                      "}\r",
-                      "\r",
-                      "ensureMyUserId(() => {  \r",
-                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
-                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
-                      "\r",
-                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
-                      "});\r",
-                      "\r",
-                      ""
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));\r",
+                      "ensureMyUserId(() => {});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -2269,48 +2062,11 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      "\r",
-                      "\r",
-                      "function ensureMyUserId(callback) {\r",
-                      "    if (pm.environment.get(\"myUserId\")) {\r",
-                      "        callback();\r",
-                      "        return;\r",
-                      "    }\r",
-                      "    pm.sendRequest({\r",
-                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
-                      "        method: \"GET\",\r",
-                      "        header: {\r",
-                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
-                      "        }\r",
-                      "    }, (err, res) => {\r",
-                      "        if (err) {\r",
-                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
-                      "            return;\r",
-                      "        }\r",
-                      "        const BODY = res.json();\r",
-                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
-                      "        callback();\r",
-                      "    });\r",
-                      "}\r",
-                      "\r",
-                      "ensureMyUserId(() => {  \r",
-                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
-                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
-                      "\r",
-                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
-                      "});\r",
-                      "\r",
-                      ""
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));\r",
+                      "ensureMyUserId(() => {});\r",
+                      "setForeignToken(() => {});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -2370,47 +2126,11 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      "\r",
-                      "\r",
-                      "if (!pm.environment.get(\"foreignToken\")) {\r",
-                      "    const NAME = pm.variables.replaceIn(\"{{$randomFirstName}} {{$randomLastName}}\");\r",
-                      "    const EMAIL = `${NAME.toLowerCase().replace(/ /g, \".\")}.foreign@test.de`;\r",
-                      "\r",
-                      "    pm.sendRequest({\r",
-                      "        url: pm.environment.get(\"base_url\") + \"registration/\",\r",
-                      "        method: \"POST\",\r",
-                      "        header: {\r",
-                      "            \"Content-Type\": \"application/json\"\r",
-                      "        },\r",
-                      "        body: {\r",
-                      "            mode: \"raw\",\r",
-                      "            raw: JSON.stringify({\r",
-                      "                fullname: NAME,\r",
-                      "                email: EMAIL,\r",
-                      "                password: pm.environment.get(\"password\"),\r",
-                      "                repeated_password: pm.environment.get(\"password\")\r",
-                      "            })\r",
-                      "        }\r",
-                      "    }, (err, res) => {\r",
-                      "        if (err) {\r",
-                      "            console.error(\"Fehler beim Anlegen des Fremdusers:\", err);\r",
-                      "            return;\r",
-                      "        }\r",
-                      "        const BODY = res.json();\r",
-                      "        pm.environment.set(\"foreignToken\", BODY.token);\r",
-                      "        console.log(\"Fremduser angelegt, Token gespeichert.\");\r",
-                      "    });\r",
-                      "}"
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));\r",
+                      "ensureMyUserId(() => {});\r",
+                      "setForeignToken(() => {});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -2576,7 +2296,7 @@
               "response": []
             },
             {
-              "name": "Task -  Fremduser (kein Board-Mitglied) Copy",
+              "name": "Task -  Fremduser als Assignee (kein Board-Mitglied)",
               "event": [
                 {
                   "listen": "test",
@@ -2597,48 +2317,10 @@
                   "listen": "prerequest",
                   "script": {
                     "exec": [
-                      "const heute = new Date();\r",
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
                       "\r",
-                      "heute.setDate(heute.getDate() + 30);\r",
-                      "\r",
-                      "const jahr = heute.getFullYear();\r",
-                      "const monat = String(heute.getMonth() + 1).padStart(2, '0');\r",
-                      "const tag = String(heute.getDate()).padStart(2, '0');\r",
-                      "const formatiertesDatum = `${jahr}-${monat}-${tag}`;\r",
-                      "\r",
-                      "pm.variables.set(\"dynamic_due_date\", formatiertesDatum);\r",
-                      "\r",
-                      "\r",
-                      "function ensureMyUserId(callback) {\r",
-                      "    if (pm.environment.get(\"myUserId\")) {\r",
-                      "        callback();\r",
-                      "        return;\r",
-                      "    }\r",
-                      "    pm.sendRequest({\r",
-                      "        url: pm.environment.get(\"base_url\") + \"email-check/?email=\" + pm.environment.get(\"email\"),\r",
-                      "        method: \"GET\",\r",
-                      "        header: {\r",
-                      "            \"Authorization\": \"token \" + pm.environment.get(\"token\")\r",
-                      "        }\r",
-                      "    }, (err, res) => {\r",
-                      "        if (err) {\r",
-                      "            console.error(\"Fehler beim Ermitteln der eigenen User-ID:\", err);\r",
-                      "            return;\r",
-                      "        }\r",
-                      "        const BODY = res.json();\r",
-                      "        pm.environment.set(\"myUserId\", BODY.id);\r",
-                      "        callback();\r",
-                      "    });\r",
-                      "}\r",
-                      "\r",
-                      "ensureMyUserId(() => {  \r",
-                      "    const aufgeloesterBodyText = pm.variables.replaceIn(pm.request.body.raw);\r",
-                      "    const REQUEST_BODY = JSON.parse(aufgeloesterBodyText);\r",
-                      "\r",
-                      "    pm.variables.set(\"myUserID\", Number(pm.environment.get(\"myUserId\")));\r",
-                      "});\r",
-                      "\r",
-                      ""
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));\r",
+                      "ensureMyUserId(() => {});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -2665,11 +2347,79 @@
                   "raw": "{\r\n    \"board\": {{boardID}},\r\n    \"title\": \"Ungültiger Assignee\",\r\n    \"description\": \"Test\",\r\n    \"status\": \"to-do\",\r\n    \"priority\": \"medium\",\r\n    \"assignee_id\": 999999,\r\n    \"due_date\": \"{{dynamic_due_date}}\"\r\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}tasks/",
+                  "raw": "{{base_url}}tasks/{{taskID}}/",
                   "host": [
                     "{{base_url}}tasks"
                   ],
                   "path": [
+                    "{{taskID}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Comment - Löschen durch nicht Autor",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const RESPONSE = pm.response;\r",
+                      "\r",
+                      "pm.test(\"Status ist 403 beim Löschversuch durch Nicht-Autor\", () => {\r",
+                      "    RESPONSE.to.have.status(403);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "eval(pm.collectionVariables.get(\"sharedFunctions\"));\r",
+                      "\r",
+                      "pm.variables.set(\"dynamic_due_date\", setFutureDate(30));\r",
+                      "ensureMyUserId(() => {});\r",
+                      "setForeignToken(() => {});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "token {{foreignToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}tasks/{{taskID}}/comments/{{commentID}}/",
+                  "host": [
+                    "{{base_url}}tasks"
+                  ],
+                  "path": [
+                    "{{taskID}}",
+                    "comments",
+                    "{{commentID}}",
                     ""
                   ]
                 }
@@ -2679,6 +2429,341 @@
           ]
         }
       ]
+    },
+    {
+      "name": "happy path - delete Objects and logout",
+      "item": [
+        {
+          "name": "Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const RESPONSE = pm.response;\r",
+                  "\r",
+                  "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
+                  "    RESPONSE.to.have.status(204);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
+                  "    pm.expect(RESPONSE.text()).to.be.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "token {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}tasks/{{taskID}}/comments/{{commentID}}/",
+              "host": [
+                "{{base_url}}tasks"
+              ],
+              "path": [
+                "{{taskID}}",
+                "comments",
+                "{{commentID}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const RESPONSE = pm.response;\r",
+                  "\r",
+                  "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
+                  "    RESPONSE.to.have.status(204);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
+                  "    pm.expect(RESPONSE.text()).to.be.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "token {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}tasks/{{taskID}}/",
+              "host": [
+                "{{base_url}}tasks"
+              ],
+              "path": [
+                "{{taskID}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Boards ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const RESPONSE = pm.response;\r",
+                  "\r",
+                  "pm.test(\"Status ist 204 beim erfolgreichen Löschen\", () => {\r",
+                  "    RESPONSE.to.have.status(204);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Antwort hat keinen Inhalt\", () => {\r",
+                  "    pm.expect(RESPONSE.text()).to.be.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "token {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}boards/{{boardID}}/",
+              "host": [
+                "{{base_url}}boards"
+              ],
+              "path": [
+                "{{boardID}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout_user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const RESPONSE = pm.response;\r",
+                  "\r",
+                  "pm.test(\"Status ist 200 beim erfolgreichen Logout\", () => {\r",
+                  "    RESPONSE.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Token wurde ungültig gemacht\", () => {\r",
+                  "    if (pm.response.code === 200) {\r",
+                  "        pm.environment.unset(\"token\");\r",
+                  "        pm.expect(true).to.be.true;\r",
+                  "    } else {\r",
+                  "        pm.expect.fail();\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "token {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}logout/",
+              "host": [
+                "{{base_url}}logout"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "const SHARED_FUNCTIONS = \"\\\r",
+          "function setFutureDate(days) {\\\r",
+          "    var heute = new Date();\\\r",
+          "    heute.setDate(heute.getDate() + days);\\\r",
+          "    var jahr = heute.getFullYear();\\\r",
+          "    var monat = String(heute.getMonth() + 1).padStart(2, '0');\\\r",
+          "    var tag = String(heute.getDate()).padStart(2, '0');\\\r",
+          "    return jahr + '-' + monat + '-' + tag;\\\r",
+          "}\\\r",
+          "\\\r",
+          "function ensureMyUserId(callback) {\\\r",
+          "    if (pm.environment.get('myUserId')) {\\\r",
+          "        callback();\\\r",
+          "        return;\\\r",
+          "    }\\\r",
+          "    pm.sendRequest({\\\r",
+          "        url: pm.environment.get('base_url') + 'email-check/?email=' + pm.environment.get('email'),\\\r",
+          "        method: 'GET',\\\r",
+          "        header: { 'Authorization': 'token ' + pm.environment.get('token') }\\\r",
+          "    }, function(err, res) {\\\r",
+          "        if (err) { console.error('Fehler beim Ermitteln der eigenen User-ID:', err); return; }\\\r",
+          "        var BODY = res.json();\\\r",
+          "        pm.environment.set('myUserId', BODY.id);\\\r",
+          "        callback();\\\r",
+          "    });\\\r",
+          "}\\\r",
+          "\\\r",
+          "function setForeignToken(callback) {\\\r",
+          "    if (pm.environment.get('foreignToken')) {\\\r",
+          "        callback();\\\r",
+          "        return;\\\r",
+          "    }\\\r",
+          "    var NAME = pm.variables.replaceIn('{{$randomFirstName}} {{$randomLastName}}');\\\r",
+          "    var EMAIL = NAME.toLowerCase().replace(/ /g, '.') + '.foreign@test.de';\\\r",
+          "    pm.sendRequest({\\\r",
+          "        url: pm.environment.get('base_url') + 'registration/',\\\r",
+          "        method: 'POST',\\\r",
+          "        header: { 'Content-Type': 'application/json' },\\\r",
+          "        body: {\\\r",
+          "            mode: 'raw',\\\r",
+          "            raw: JSON.stringify({\\\r",
+          "                fullname: NAME,\\\r",
+          "                email: EMAIL,\\\r",
+          "                password: pm.environment.get('password'),\\\r",
+          "                repeated_password: pm.environment.get('password')\\\r",
+          "            })\\\r",
+          "        }\\\r",
+          "    }, function(err, res) {\\\r",
+          "        if (err) { console.error('Fehler beim Anlegen des Fremdusers:', err); return; }\\\r",
+          "        var BODY = res.json();\\\r",
+          "        pm.environment.set('foreignToken', BODY.token);\\\r",
+          "        callback();\\\r",
+          "    });\\\r",
+          "}\\\r",
+          "\";\r",
+          "\r",
+          "pm.collectionVariables.set(\"sharedFunctions\", SHARED_FUNCTIONS);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "sharedFunctions",
+      "value": ""
     }
   ]
 }
