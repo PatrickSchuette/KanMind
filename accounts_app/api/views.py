@@ -16,10 +16,12 @@ class RegistrationView(APIView):
     
     def get_serializer(self, *args, **kwargs):
         """Provide a serializer instance so the browsable API can pre-fill the form."""
+        
         return RegistrationSerializer(*args, **kwargs)
 
     def post(self, request):
         """Create a new user and return an auth token."""
+        
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -28,6 +30,7 @@ class RegistrationView(APIView):
 
     def _build_response(self, token, user):
         """Build the response payload for a registered user."""
+        
         return {
             'token': token.key,
             'fullname': user.profile.fullname,
@@ -43,10 +46,12 @@ class LoginView(APIView):
     
     def get_serializer(self, *args, **kwargs):
         """Provide a serializer instance so the browsable API can pre-fill the form."""
+        
         return LoginSerializer(*args, **kwargs)
 
     def post(self, request):
         """Authenticate the user and return an auth token."""
+        
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
@@ -55,6 +60,7 @@ class LoginView(APIView):
 
     def _build_response(self, token, user):
         """Build the response payload for a logged-in user."""
+        
         return {
             'token': token.key,
             'fullname': user.profile.fullname,
@@ -70,18 +76,19 @@ class EmailCheckView(APIView):
 
     def get(self, request):
         """Return the user data for a given email, if it exists."""
+        
         email = request.query_params.get('email')
         if not email:
             return Response({'detail': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            profile = UserProfile.objects.select_related(
-                'user').get(user__email=email)
+            profile = UserProfile.objects.select_related('user').get(user__email=email)
         except UserProfile.DoesNotExist:
             return Response({'detail': 'Email not found.'}, status=status.HTTP_404_NOT_FOUND)
         return Response(self._build_response(profile), status=status.HTTP_200_OK)
 
     def _build_response(self, profile):
         """Build the response payload for the found user."""
+        
         return {
             'id': profile.user.id,
             'email': profile.user.email,
@@ -96,5 +103,6 @@ class LogoutView(APIView):
 
     def post(self, request):
         """Delete the requesting user's auth token."""
+        
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)

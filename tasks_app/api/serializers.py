@@ -23,13 +23,11 @@ class TaskNestedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = [
-            'id', 'title', 'description', 'status', 'priority',
-            'assignee', 'reviewer', 'due_date', 'comments_count',
-        ]
+        fields = ['id', 'title', 'description', 'status', 'priority','assignee', 'reviewer', 'due_date', 'comments_count']        
 
     def get_comments_count(self, obj):
         """Return the number of comments on this task."""
+        
         return obj.comments.count()
 
 
@@ -42,10 +40,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = [
-            'id', 'board', 'title', 'description', 'status', 'priority',
-            'assignee', 'reviewer', 'due_date', 'comments_count',
-        ]
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority','assignee', 'reviewer', 'due_date', 'comments_count']
 
     def get_comments_count(self, obj):
         """Return the number of comments on this task."""
@@ -64,13 +59,11 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = [
-            'id', 'board', 'title', 'description', 'status', 'priority',
-            'assignee_id', 'reviewer_id', 'due_date',
-        ]
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority','assignee_id', 'reviewer_id', 'due_date']
 
     def validate(self, attrs):
         """Ensure assignee and reviewer are members of the board."""
+        
         board = attrs.get('board')
         for role in ['assignee', 'reviewer']:
             user = attrs.get(role)
@@ -80,15 +73,18 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
     def _is_board_member(self, board, user):
         """Check whether the given user is a member or owner of the board."""
+        
         return user == board.owner or board.members.filter(id=user.id).exists()
 
     def create(self, validated_data):
         """Create the task with the requesting user as owner."""
+        
         owner = self.context['request'].user
         return Task.objects.create(owner=owner, **validated_data)
     
     def validate_due_date(self, value):
         """Ensure the due date is not in the past."""
+        
         if value and value < date.today():
             raise serializers.ValidationError('Due date cannot be in the past.')
         return value
@@ -106,13 +102,11 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = [
-            'id', 'title', 'description', 'status', 'priority',
-            'assignee_id', 'reviewer_id', 'due_date',
-        ]
+        fields = ['id', 'title', 'description', 'status', 'priority','assignee_id', 'reviewer_id', 'due_date']
 
     def validate(self, attrs):
         """Ensure assignee and reviewer are members of the task's board."""
+        
         board = self.instance.board
         for role in ['assignee', 'reviewer']:
             user = attrs.get(role)
@@ -122,6 +116,7 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
     def _is_board_member(self, board, user):
         """Check whether the given user is a member or owner of the board."""
+        
         return user == board.owner or board.members.filter(id=user.id).exists()
 
 
@@ -145,6 +140,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create the comment with the requesting user as author and the given task."""
+        
         return Comment.objects.create(
             task=self.context['task'],
             author=self.context['request'].user,

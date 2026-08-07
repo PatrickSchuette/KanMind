@@ -15,6 +15,7 @@ class RegistrationSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         """Ensure the email is not already registered."""
+        
         email_already_taken = User.objects.filter(email=value).exists()
         if email_already_taken:
             raise serializers.ValidationError(f'Email "{value}" is already in use.')
@@ -22,6 +23,7 @@ class RegistrationSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         """Ensure both passwords match."""
+        
         passwords_match = attrs['password'] == attrs['repeated_password']
         if not passwords_match:
             raise serializers.ValidationError('Passwords do not match.')
@@ -29,6 +31,7 @@ class RegistrationSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         """Create the User and the linked UserProfile."""
+        
         user = User.objects.create_user(
             username=validated_data['email'],
             email=validated_data['email'],
@@ -49,6 +52,7 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         """Authenticate the user and attach it to the validated data."""
+        
         user = authenticate(
             username=attrs['email'],
             password=attrs['password'],

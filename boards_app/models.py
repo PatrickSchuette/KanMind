@@ -16,4 +16,5 @@ class Board(models.Model):
 
     def __str__(self):
         """Return a readable string representation of the board."""
+        
         return f"{self.title} (Owner: {self.owner})"

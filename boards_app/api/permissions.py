@@ -6,6 +6,7 @@ class IsBoardMemberOrOwner(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check whether the requesting user is the owner or a member."""
+        
         return request.user == obj.owner or request.user in obj.members.all()
 
 
@@ -14,4 +15,5 @@ class IsBoardOwner(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check whether the requesting user is the owner."""
+        
         return request.user == obj.owner

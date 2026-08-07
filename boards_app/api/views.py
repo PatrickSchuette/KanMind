@@ -6,13 +6,7 @@ from rest_framework.response import Response
 from boards_app.models import Board
 
 from .permissions import IsBoardMemberOrOwner, IsBoardOwner
-from .serializers import (
-    BoardCreateSerializer,
-    BoardDetailSerializer,
-    BoardListSerializer,
-    BoardUpdateResponseSerializer,
-    BoardUpdateSerializer,
-)
+from .serializers import (BoardCreateSerializer,BoardDetailSerializer,BoardListSerializer,BoardUpdateResponseSerializer,BoardUpdateSerializer)
 
 
 class BoardViewSet(viewsets.ModelViewSet):
@@ -20,6 +14,7 @@ class BoardViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Return only owned/member boards for list; all boards otherwise."""
+        
         if self.action == 'list':
             user = self.request.user
             return Board.objects.filter(Q(owner=user) | Q(members=user)).distinct()
@@ -27,6 +22,7 @@ class BoardViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """Select the serializer class based on the current action."""
+        
         serializer_map = {
             'list': BoardListSerializer,
             'create': BoardCreateSerializer,
@@ -38,6 +34,7 @@ class BoardViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Select permission classes based on the current action."""
+        
         if self.action == 'destroy':
             return [IsAuthenticated(), IsBoardOwner()]
         if self.action in ['retrieve', 'update', 'partial_update']:
@@ -46,6 +43,7 @@ class BoardViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Create a board and return it in the list response format."""
+        
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         board = serializer.save()
@@ -53,10 +51,10 @@ class BoardViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         """Update a board and return it with full owner and member details."""
+        
         instance = self.get_object()
         partial = kwargs.get('partial', False)
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         board = serializer.save()
         return Response(BoardUpdateResponseSerializer(board).data)

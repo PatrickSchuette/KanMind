@@ -34,6 +34,7 @@ class Task(models.Model):
 
     def __str__(self):
         """Return a readable string representation of the task."""
+        
         return f"{self.title} ({self.get_status_display()})"
 
 
@@ -52,4 +53,5 @@ class Comment(models.Model):
 
     def __str__(self):
         """Return a readable string representation of the comment."""
+        
         return f"Comment by {self.author} on {self.task}"

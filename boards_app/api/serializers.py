@@ -30,6 +30,7 @@ class TaskNestedSerializer(serializers.Serializer):
 
     def get_comments_count(self, obj):
         """Return the number of comments on this task."""
+        
         return obj.comments.count()
 
 
@@ -44,25 +45,26 @@ class BoardListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Board
-        fields = [
-            'id', 'title', 'member_count', 'ticket_count',
-            'tasks_to_do_count', 'tasks_high_prio_count', 'owner_id',
-        ]
+        fields = ['id', 'title', 'member_count', 'ticket_count','tasks_to_do_count', 'tasks_high_prio_count', 'owner_id']
 
     def get_member_count(self, obj):
         """Return the number of members on this board."""
+        
         return obj.members.count()
 
     def get_ticket_count(self, obj):
         """Return the total number of tasks on this board."""
+        
         return obj.tasks.count()
 
     def get_tasks_to_do_count(self, obj):
         """Return the number of tasks with status 'to-do'."""
+        
         return obj.tasks.filter(status='to-do').count()
 
     def get_tasks_high_prio_count(self, obj):
         """Return the number of tasks with priority 'high'."""
+        
         return obj.tasks.filter(priority='high').count()
 
 
@@ -79,6 +81,7 @@ class BoardCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create the board with the requesting user as owner."""
+        
         members = validated_data.pop('members', [])
         owner = self.context['request'].user
         board = Board.objects.create(owner=owner, **validated_data)
@@ -111,6 +114,7 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Update the title and replace the board's members."""
+        
         instance.title = validated_data.get('title', instance.title)
         instance.save()
         if 'members' in validated_data:

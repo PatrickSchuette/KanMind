@@ -15,4 +15,5 @@ class UserProfile(models.Model):
 
     def __str__(self):
         """Return a readable string representation of the profile."""
+        
         return self.fullname
